@@ -24,3 +24,11 @@ Other commands:
 - `src/flags.ts` — flag SVG imports (from `country-flag-icons`); keep in sync with countries.ts
 - `src/App.tsx` — the quiz: start screen, card, answers, results
 - `tailwind.config.js` — colours (paper, ink, moss, brick) and fonts
+
+## Deployment (GitHub Pages)
+`.github/workflows/deploy.yml` builds the app and publishes `dist/` to
+https://vladsobol92.github.io/flag-quiz/
+
+- Runs automatically on every push to `main`.
+- Run it manually: GitHub → **Actions** → **Deploy to GitHub Pages** → **Run workflow**.
+- One-time setup: GitHub → **Settings** → **Pages** → **Source: GitHub Actions**.
