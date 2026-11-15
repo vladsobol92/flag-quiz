@@ -33,6 +33,7 @@ function Flag({ code, className }: { code: string; className?: string }) {
 }
 
 const ROUND_SIZES = [10, 20, COUNTRIES.length] as const;
+const PREVIEW_FIRST = ["UA", "EE"];
 
 export default function App() {
   const [phase, setPhase] = useState<Phase>("start");
@@ -101,7 +102,7 @@ export default function App() {
         <header className="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-moss">Flashcards · Europe</p>
-            <h1 className="font-display text-4xl leading-none md:text-5xl">Capitals of Europe</h1>
+            <h1 className="font-display text-4xl leading-none md:text-5xl">Capitals of Europe by Vlad Sobol</h1>
           </div>
           {phase === "play" && (
             <div className="flex items-center gap-6 text-sm">
@@ -248,7 +249,14 @@ function StartScreen(props: {
   setShowName: (b: boolean) => void;
   onStart: () => void;
 }) {
-  const preview = useMemo(() => shuffle(COUNTRIES).slice(0, 12), []);
+  // Ukraine and Estonia always lead the preview; the remaining slots are random.
+  const preview = useMemo(() => {
+    const pinned = PREVIEW_FIRST.map((code) => COUNTRIES.find((c) => c.code === code)).filter(
+      (c): c is Country => !!c,
+    );
+    const rest = shuffle(COUNTRIES.filter((c) => !PREVIEW_FIRST.includes(c.code)));
+    return [...pinned, ...rest].slice(0, 12);
+  }, []);
   return (
     <main className="mt-10 grid gap-10 md:grid-cols-[1fr_1.1fr] md:items-start">
       <section>
