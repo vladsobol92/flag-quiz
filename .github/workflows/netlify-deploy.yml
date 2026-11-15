@@ -1,0 +1,13 @@
+name: Trigger Netlify deploy
+
+# Netlify already deploys on every push to main.
+# This adds a manual "Run workflow" button in GitHub's Actions tab.
+on:
+  workflow_dispatch:
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Netlify build hook
+        run: curl -fsS -X POST -d '{}' "${{ secrets.NETLIFY_BUILD_HOOK }}"

@@ -25,10 +25,9 @@ Other commands:
 - `src/App.tsx` — the quiz: start screen, card, answers, results
 - `tailwind.config.js` — colours (paper, ink, moss, brick) and fonts
 
-## Deployment (GitHub Pages)
-`.github/workflows/deploy.yml` builds the app and publishes `dist/` to
-https://vladsobol92.github.io/flag-quiz/
+## Deployment (Netlify)
+Build settings live in `netlify.toml` (`pnpm build` → `dist/`).
 
-- Runs automatically on every push to `main`.
-- Run it manually: GitHub → **Actions** → **Deploy to GitHub Pages** → **Run workflow**.
-- One-time setup: GitHub → **Settings** → **Pages** → **Source: GitHub Actions**.
+- Netlify deploys automatically on every push to `main`.
+- Manual deploy from GitHub: **Actions** → **Trigger Netlify deploy** → **Run workflow**
+  (needs the `NETLIFY_BUILD_HOOK` repository secret).
