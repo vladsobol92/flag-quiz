@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { COUNTRIES, type Country } from "./countries";
 import { FLAGS } from "./flags";
 
@@ -368,6 +368,8 @@ function ResultsScreen({
         </button>
       </div>
 
+      <EmailResults total={results.length} missedCodes={missed.map((m) => m.country.code)} />
+
       <h3 className="mt-12 border-b border-line pb-2 text-xs font-semibold uppercase tracking-[0.16em] text-dim">
         This round
       </h3>
@@ -392,5 +394,87 @@ function ResultsScreen({
         ))}
       </ul>
     </main>
+  );
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+function EmailResults({ total, missedCodes }: { total: number; missedCodes: string[] }) {
+  const [email, setEmail] = useState("");
+  const [touched, setTouched] = useState(false);
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [serverError, setServerError] = useState("");
+
+  const trimmed = email.trim();
+  const invalid = trimmed === "" ? "Enter your email address." : EMAIL_RE.test(trimmed) ? "" : "That doesn't look like an email address.";
+  const showError = touched && invalid;
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setTouched(true);
+    if (invalid || status === "sending") return;
+    setStatus("sending");
+    setServerError("");
+    try {
+      const res = await fetch("/api/send-results", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: trimmed, total, missed: missedCodes }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Could not send the email. Please try again.");
+      }
+      setStatus("sent");
+    } catch (err) {
+      setServerError(err instanceof Error ? err.message : "Could not send the email. Please try again.");
+      setStatus("error");
+    }
+  }
+
+  if (status === "sent") {
+    return (
+      <p className="mt-8 text-sm font-semibold text-moss" role="status">
+        ✓ Results sent to {trimmed}. Check your inbox (and the spam folder).
+      </p>
+    );
+  }
+
+  return (
+    <form onSubmit={submit} noValidate className="mt-8 max-w-md">
+      <label htmlFor="results-email" className="text-xs font-semibold uppercase tracking-[0.16em] text-dim">
+        Email me my results
+      </label>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <input
+          id="results-email"
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            if (status === "error") setStatus("idle");
+          }}
+          onBlur={() => trimmed && setTouched(true)}
+          aria-invalid={showError ? true : undefined}
+          aria-describedby="results-email-msg"
+          className={`min-w-0 flex-1 rounded-md border-2 bg-transparent px-3 py-2.5 text-sm outline-none focus:border-ink ${
+            showError ? "border-brick" : "border-line"
+          }`}
+        />
+        <button
+          type="submit"
+          disabled={status === "sending"}
+          className="rounded-md bg-ink px-5 py-2.5 text-sm font-semibold text-paper transition hover:brightness-125 disabled:opacity-60"
+        >
+          {status === "sending" ? "Sending…" : "Send"}
+        </button>
+      </div>
+      <p id="results-email-msg" className="mt-2 min-h-5 text-sm text-brick" role="alert">
+        {showError ? invalid : status === "error" ? serverError : ""}
+      </p>
+    </form>
   );
 }

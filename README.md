@@ -31,3 +31,14 @@ Build settings live in `netlify.toml` (`pnpm build` → `dist/`).
 - Netlify deploys automatically on every push to `main`.
 - Manual deploy from GitHub: **Actions** → **Trigger Netlify deploy** → **Run workflow**
   (needs the `NETLIFY_BUILD_HOOK` repository secret).
+
+## Emailing results
+After a round the player can enter an email and get their score
+(`netlify/functions/send-results.mts`, served at `/api/send-results`, sent through Gmail).
+
+Set these in Netlify → **Site configuration → Environment variables**:
+- `GMAIL_USER` — the sender Gmail address
+- `GMAIL_APP_PASSWORD` — a Gmail App Password (myaccount.google.com/apppasswords; needs 2-Step Verification)
+
+Locally, `pnpm dev` doesn't run functions — use `npx netlify-cli dev` with the same variables in a `.env` file
+(don't commit it). The offline `bundle.html` can't send emails.
